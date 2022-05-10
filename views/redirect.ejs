@@ -1,0 +1,57 @@
+<body>
+    <form id="checkoutForm" style="display: none;" name="checkoutForm" method="POST" action="https://www.cashfree.com/checkout/post/submit"> 
+         
+               <input type="text"  id="order_id" name="orderId" > <br>
+               <input type="text"  id="amount" name="orderAmount"> <br>
+               <input type="text"  id="email" name="customerEmail"> <br>
+                <input type="text"   id="phone" name="customerPhone"> <br>  
+                <input type="text" id="returnUrl" name="returnUrl" value="http://13.127.231.91:5000/success" ><br>
+                <input type="text" id="notifyUrl" name="notifyUrl"><br>
+                <input type="text" id="signature" name="signature"><br>
+                <input type="text" id="appId" name="appId" value="1634328881cd96cf49ef35fbd4234361">
+                
+            <td colspan="2"><input type="submit" value="pay cashfree" id="payBtn">
+         
+        </table>
+    </form>
+    <div id="generatedSignature"></div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript" >
+  var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+    return false;
+}
+$(document).ready(function () {
+    
+    var email = getUrlParameter('email');
+    console.log(email)
+    $("#email").val(email)
+    var amount = getUrlParameter('amount');
+    $("#amount").val(amount)
+    var phone = getUrlParameter('phone');
+    $("#phone").val(phone)
+    var order_id = getUrlParameter('order_id');
+    $("#order_id").val(order_id)
+    var signature = "<%= signature %>";
+    var app = "<%= app %>";
+    
+    $("#signature").val(signature)
+    $("#appId").val(app)
+    setInterval(function () {$("#payBtn").click();}, 1000);
+    
+});
+
+</script>

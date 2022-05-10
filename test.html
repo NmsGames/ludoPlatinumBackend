@@ -1,0 +1,299 @@
+<script  src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+<button onclick="Login();">Login</button>
+<button onclick="ForceLogin();">ForceLogin</button>
+<br/><br/>
+
+<select id="user">
+    <option value="FUN000007">FUN000007</option>
+    <option value="FUN000002">FUN000002</option>
+   <!--  <option value="3">User 3</option> -->
+</select>
+<select id="game">
+    <option value="1">American Roulette Timer</option>
+    <option value="3">Fun Target Timer</option>
+    <option value="3">Fun Target Timer</option>
+</select>
+<button onclick="registerPlayer();">Register Player</button>
+<br/><br/><br/><br/>
+
+<button onclick="OnPlaceBet();">On Place Bet</button>
+
+<button onclick="OnTimer();">Game Play Timer</button>
+
+<button onclick="OnUserInfo();">User Details</button>
+
+<button onclick="Disconnect();">Disconnect</button>
+
+<button onclick="OnWinNo()">OnWinNo</button>
+
+<button onclick="OnTakeAmt()">OnTakeAmt</button>
+
+<button onclick="OnPreBet()">Pre Round Bets</button>
+
+<button onclick="OnBetplace();">On Bet place</button>
+
+<button onclick="test();">test (show Bet)</button>
+
+<button onclick="onLeaveRoom();">On leave room</button>
+<br/><br/>
+
+<h1>My Account</h1>
+<button onclick="OnChangePassword();">On Change Passowrd</button>
+<button onclick="OnNotification();">On Notification</button>
+<button onclick="OnsenderNotification();">On sender Notification</button>
+<button onclick="OnSendPoints();">On Send Points</button>
+<button onclick="OnAcceptPoints();">On Accept Points</button>
+<button onclick="OnRejectPoints();">On Reject Points</button>
+<button onclick="OnUserProfile();">On User Profile</button>
+<button onclick="OnLogout();">On Logout</button>
+
+
+
+<script>
+    let socketId;
+    let RoundCount
+    //var server = "http://localhost:5000/";
+    var server = "http://13.233.60.158:5000";
+
+    var io = io(server, { transport : ['websocket'] });
+
+    function Login(){
+        io.emit("OnLogin", {user_id:'FUN000007' , password:'123456' ,device :'42345678812'});
+    }
+
+    function ForceLogin(){
+        io.emit("OnForceLogin", {user_id:'FUN000007' , password:'123456' ,device :'42345678812'});
+    }
+
+    function registerPlayer(){
+        var user_id = document.getElementById('user').value;
+        var game_id = document.getElementById('game').value;
+        io.emit("RegisterPlayer", {playerId:user_id, balance:45000,gameId:game_id});
+    }
+
+    function OnTimer(){
+        io.emit("OnTimer", {});
+    }
+
+    function OnUserInfo(){
+        io.emit("OnUserInfo", {});
+    }
+
+    function OnPreBet(){
+        var user_id = document.getElementById('user').value;
+        io.emit("OnPreBet", {playerId:user_id});
+    }
+
+
+    function OnPlaceBet(){
+        var user_id = document.getElementById('user').value;
+        var game_id = document.getElementById('game').value;
+        if( game_id == 3){
+            var obj =  {playerId:user_id,round_count:RoundCount,gameId:game_id,points:10,no_0:10,no_1:10,no_2:10,no_3:0,no_4:0,no_5:1,no_6:1,no_7:1,no_8:1,no_9:1}
+        } else {
+            var obj =  {playerId:user_id,round_count:RoundCount,gameId:game_id,bet_info:[{spot:31,chips:200},{spot:17,chips:100}],total_chips:300};
+        }
+        
+        io.emit("OnPlaceBet", obj);
+    }
+
+
+    function OnWinNo(){
+        io.emit("generateWinNo", {spot:"1",chip:"10",position:"left"});
+    }
+
+    function OnTakeAmt(){
+        var user_id = document.getElementById('user').value;
+        io.emit("OnTakeAmount", {playerId:user_id});
+    }
+
+
+    function Disconnect(){
+        io.emit("Disconnec", {spot:"0",chip:"10",position:"left"});
+    }
+
+
+    function OnBetplace(){
+        io.emit("OnBetsPlaced", {spot:"0",chip:"10",position:"left"});
+    }
+
+    
+    function test(){
+        io.emit("test", {spot:"0",chip:"10",position:"left"});
+    }
+
+    function onLeaveRoom(){
+        io.emit("onleaveRoom", {room:'dragon'});
+    }
+
+
+
+    //MyAccount
+    function OnChangePassword(){
+        io.emit("OnChangePassword", {user_id:'FUN000007' , old_password:'123456789',new_password:'123456789'});
+    }
+
+    function OnNotification(){
+        io.emit("OnNotification", {user_id:'FUN000007'});
+    }
+
+    function OnsenderNotification(){
+        io.emit("OnsenderNotification", {user_id:'FUN000007'});
+    }
+
+    function OnSendPoints(){
+        io.emit("OnSendPoints", {sender:'FUN000001',reciever:"FUN000002",points:"100",password:"123456789"});
+    }
+
+    function OnAcceptPoints(){
+        io.emit("OnAcceptPoints", {user_id:'FUN000007',notify_id:"52"});
+    }
+
+    function OnRejectPoints(){
+        io.emit("OnRejectPoints", {user_id:'FUN000007',notify_id:"54"});
+    }
+
+    function OnUserProfile(){
+        io.emit("OnUserProfile", {user_id:'FUN000001'});
+    }
+
+    function OnLogout(){
+        io.emit("OnLogout", {user_id:'FUN000001'});
+    }
+
+
+    //====================================Fun Target Timer===================================================
+
+    io.on('error', function(err) {
+        console.log(err);
+    })
+
+    io.on('OnLogin', function(err) {
+        console.log(err);
+    })
+
+    io.on('OnForceExit', function(err) {
+        console.log("Forcely player out from game");
+    })
+
+    io.on("OnCurrentTimer", function (data) {  //emit: current round info(previousWins,botsBetsDetails,user_bal)
+        console.log(data)
+        socketId = data.socketId
+        RoundCount = data.RoundCount;
+    });
+
+    io.on("OnBetsPlaced", function (data) {
+        console.log(data)
+    })
+
+    io.on("OnPreBet", function (data) {
+        console.log(data)
+    })
+
+
+    io.on("OnPlaceBet", function (data) {
+        console.log(data)
+    });
+
+
+    io.on("OnWinNo", function (data) {
+        console.log(data)
+    });
+
+
+    io.on("OnWinAmount", function (data) {
+        console.log(data)
+    });
+
+
+    io.on("OnTakeAmount", function (data) {
+        console.log(data)
+    });
+
+    
+    io.on("OnPlayerWin", function (data) {
+        console.log(data)
+    });
+
+
+    io.on("onleaveRoom", function (data) { 
+        console.log(data)
+    });
+
+
+
+    io.on("OnTimerStart", function (data) {
+        console.log("start betting")
+        
+    });
+     
+    io.on("OnTimeUp", function (data) {
+        console.log("stop betting")
+        
+    });
+
+    io.on("OnTimer", function (data) {
+        console.log(data)
+        
+    });
+
+
+
+    //MyAccount
+    io.on("OnChangePassword", function (data) {
+        console.log(data)
+        
+    });
+
+    io.on("OnNotification", function (data) {
+        console.log(data)
+        
+    });
+
+    io.on("OnsenderNotification", function (data) {
+        console.log(data)
+    });
+
+   
+
+    io.on("OnSendPoints", function (data) {
+        console.log(data)
+    });
+
+    io.on("OnAcceptPoints", function (data) {
+        console.log(data)
+    });
+
+    io.on("OnRejectPoints", function (data) {
+        console.log(data)
+    });
+
+    io.on("OnUserProfile", function (data) {
+        console.log(data)
+    });
+
+    io.on("OnLogout", function (data) {
+        console.log(data)
+    });
+
+
+
+    
+    //==========================================================================================================
+
+
+
+
+
+
+
+    
+
+    
+
+    
+     
+
+ </script>   
